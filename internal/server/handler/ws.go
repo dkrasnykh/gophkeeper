@@ -50,22 +50,10 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 			"failed establish websocket connection",
 			sl.Err(err),
 		)
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	token := r.Header.Get("token")
-
-	if token == "" {
-		log.Error(
-			"request does not contains token, interupt websocket connection",
-			sl.Err(err),
-		)
-		w.WriteHeader(http.StatusBadRequest)
-		_ = conn.Close()
-		return
-	}
-
 	userID, err := lib.ParseToken(token)
 	if err != nil {
 		log.Error(
@@ -73,7 +61,8 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 			slog.String("token", token),
 			sl.Err(err),
 		)
-		w.WriteHeader(http.StatusBadRequest)
+		errMsg, _ := json.Marshal(models.Message{Type: "error", Value: []byte("invalid token")})
+		err = conn.WriteMessage(websocket.TextMessage, errMsg)
 		_ = conn.Close()
 		return
 	}
@@ -86,9 +75,8 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 			slog.Int64("user_id", userID),
 			sl.Err(err),
 		)
-		errMsg := models.Message{Type: "error", Value: []byte("failed collect init snapshot data")}
-		errMsgText, _ := json.Marshal(errMsg)
-		err = conn.WriteMessage(websocket.TextMessage, errMsgText)
+		errMsg, _ := json.Marshal(models.Message{Type: "error", Value: []byte("failed collect init snapshot data")})
+		err = conn.WriteMessage(websocket.TextMessage, errMsg)
 
 		if err != nil {
 			// TODO handle interrupted connection with client
@@ -185,18 +173,6 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 			}
 
 			go h.sendUpdates(userID, updateMsg)
-			/*
-				update, err := json.Marshal(updateMsg)
-				for _, c := range h.conns.UserConns(userID) {
-					err := c.WriteMessage(websocket.TextMessage, update)
-					if err != nil {
-						/// что делать, если сообщение не может быть отправлено?
-						// удалять из мапы соединение
-						//conn.PingHandler()
-					}
-				}
-
-			*/
 		}
 	}
 
