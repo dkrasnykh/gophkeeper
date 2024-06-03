@@ -2,25 +2,19 @@ package config
 
 import (
 	"flag"
+	"github.com/ilyakaznacheev/cleanenv"
 	"os"
 	"time"
-
-	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type Config struct {
-	DatabaseURL    string        `yaml:"database_url" env-required:"true"`
-	TokenTTL       time.Duration `yaml:"token_ttl" env-default:"1h"`
-	ConnectTimeout time.Duration `yaml:"connect_timeout" env-default:"2s"`
-	GRPC           GRPCConfig    `yaml:"grpc"`
+type ClientConfig struct {
+	StoragePath  string        `yaml:"storage_path" env-required:"true"`
+	GRPCAddress  string        `yaml:"grpc_address" env-required:"true"`
+	WSURL        string        `yaml:"ws_url" env-required:"true"`
+	QueryTimeout time.Duration `yaml:"query_timeout" env-default:"2s"`
 }
 
-type GRPCConfig struct {
-	Port    int           `yaml:"port"`
-	Timeout time.Duration `yaml:"timeout"`
-}
-
-func MustLoad() *Config {
+func MustLoad() *ClientConfig {
 	path := configPath()
 	if path == "" {
 		panic("config path is empty")
@@ -30,7 +24,7 @@ func MustLoad() *Config {
 		panic("config file does not exist: " + path)
 	}
 
-	var cfg Config
+	var cfg ClientConfig
 
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
 		panic("cannot read config: " + err.Error())
@@ -45,7 +39,7 @@ func configPath() string {
 	flag.Parse()
 
 	if res == "" {
-		res = os.Getenv("AUTH_CONFIG_PATH")
+		res = os.Getenv("CLIENT_CONFIG_PATH")
 	}
 	return res
 }

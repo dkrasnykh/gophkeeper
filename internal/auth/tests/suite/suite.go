@@ -29,7 +29,7 @@ func New(t *testing.T) (context.Context, *Suite) {
 	t.Helper()
 	t.Parallel()
 
-	path := os.Getenv("CONFIG_PATH")
+	path := os.Getenv("AUTH_CONFIG_PATH")
 	cfg := MustLoadPath(path)
 
 	ctx, cancelCtx := context.WithTimeout(context.Background(), cfg.GRPC.Timeout)

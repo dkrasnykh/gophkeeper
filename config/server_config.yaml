@@ -1,0 +1,4 @@
+database_url: "postgres://postgres:postgres@localhost:5432/keeper?sslmode=disable"
+query_timeout: 2s
+ws:
+  address: "localhost:4443"

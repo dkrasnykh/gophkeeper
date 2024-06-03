@@ -1,5 +1,5 @@
 database_url: "postgres://postgres:postgres@localhost:5432/auth?sslmode=disable"
-token_ttl: 1h
+token_ttl: 12h
 connect_timeout: 2s
 grpc:
   port: 44044
