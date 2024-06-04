@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/dkrasnykh/gophkeeper/internal/auth/lib/jwt"
 	"github.com/dkrasnykh/gophkeeper/internal/auth/storage"
+	"github.com/dkrasnykh/gophkeeper/pkg/jwt"
 	"github.com/dkrasnykh/gophkeeper/pkg/logger/sl"
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )

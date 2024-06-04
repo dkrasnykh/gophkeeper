@@ -31,6 +31,7 @@ func Run(log *slog.Logger, wsAddress string, databaseURL string, timeout time.Du
 	http.HandleFunc("/ws", h.Handle)
 
 	err = http.ListenAndServe(wsAddress, nil)
+	//err = http.ListenAndServeTLS(wsAddress, server_crt, server_key, nil)
 	if err != nil {
 		panic(err)
 	}
