@@ -2,14 +2,18 @@ package config
 
 import (
 	"flag"
-	"github.com/ilyakaznacheev/cleanenv"
 	"os"
 	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
 	DatabaseURL  string        `yaml:"database_url" env-required:"true"`
 	QueryTimeout time.Duration `yaml:"query_timeout" env-default:"2s"`
+	CertFile     string        `yaml:"cert_file" env-required:"true"`
+	KeyFile      string        `yaml:"key_file" env-required:"true"`
+	Key          string        `yaml:"key" env-required:"true"`
 	WS           WSConfig      `yaml:"ws"`
 }
 

@@ -1,4 +1,4 @@
 storage_path: "./storage/client.db"
 grpc_address: ":44044"
-ws_url: "ws://localhost:4443/ws"
+ws_url: "wss://localhost:4443/ws"
 query_timeout: 2s

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/dkrasnykh/gophkeeper/internal/server/storage"
+	"github.com/dkrasnykh/gophkeeper/pkg/hash"
 	"github.com/dkrasnykh/gophkeeper/pkg/logger/sl"
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
@@ -89,7 +90,8 @@ func (s *Service) convertItemListToMessage(items []storage.Item) models.Message 
 
 	values := make([][]byte, 0, len(items))
 	for _, item := range items {
-		values = append(values, item.Data)
+		decoded := hash.DecodeMsg(string(item.Data), s.key)
+		values = append(values, []byte(decoded))
 	}
 	msg, _ := json.Marshal(values)
 	log.Info(
@@ -108,7 +110,7 @@ func (s *Service) convertMessageToItem(userID int64, msg models.Message) storage
 	)
 
 	var item storage.Item
-	item.Data = msg.Value
+	item.Data = []byte(hash.EncodeMsg(msg.Value, s.key))
 	item.UserID = userID
 
 	var kind struct{ Type string }
@@ -119,32 +121,32 @@ func (s *Service) convertMessageToItem(userID int64, msg models.Message) storage
 		var cred models.Credentials
 		_ = json.Unmarshal(msg.Value, &cred)
 
-		item.Kind = "cred"
-		item.Key = cred.Login
+		item.Kind = hash.EncodeMsg([]byte("cred"), s.key)
+		item.Key = hash.EncodeMsg([]byte(cred.Login), s.key)
 		item.CreatedAt = cred.Created
 
 	case "text":
 		var text models.Text
 		_ = json.Unmarshal(msg.Value, &text)
 
-		item.Kind = "text"
-		item.Key = text.Key
+		item.Kind = hash.EncodeMsg([]byte("text"), s.key)
+		item.Key = hash.EncodeMsg([]byte(text.Key), s.key)
 		item.CreatedAt = text.Created
 
 	case "bin":
 		var bin models.Binary
 		_ = json.Unmarshal(msg.Value, &bin)
 
-		item.Kind = "bin"
-		item.Key = bin.Key
+		item.Kind = hash.EncodeMsg([]byte("bin"), s.key)
+		item.Key = hash.EncodeMsg([]byte(bin.Key), s.key)
 		item.CreatedAt = bin.Created
 
 	case "card":
 		var card models.Card
 		_ = json.Unmarshal(msg.Value, &card)
 
-		item.Kind = "card"
-		item.Key = card.Number
+		item.Kind = hash.EncodeMsg([]byte("card"), s.key)
+		item.Key = hash.EncodeMsg([]byte(card.Number), s.key)
 		item.CreatedAt = card.Created
 	}
 

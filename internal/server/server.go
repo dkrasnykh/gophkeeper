@@ -17,21 +17,20 @@ type App struct {
 	db *pgxpool.Pool
 }
 
-func Run(log *slog.Logger, wsAddress string, databaseURL string, timeout time.Duration) {
+func Run(log *slog.Logger, wsAddress string, databaseURL string, timeout time.Duration, certFile string, keyFile string, key string) {
 	// TODO gracefull shutdown
 	db, err := storage.New(databaseURL, timeout)
 	if err != nil {
 		panic(err)
 	}
 	storageKeeper := storage.NewKeeperPostgres(db, timeout)
-	serviceKeeper := service.New(log, storageKeeper)
+	serviceKeeper := service.New(log, storageKeeper, key)
 	conns := clients.NewUserWSConnMap()
 	h := handler.NewHandler(log, serviceKeeper, conns)
 
 	http.HandleFunc("/ws", h.Handle)
 
-	err = http.ListenAndServe(wsAddress, nil)
-	//err = http.ListenAndServeTLS(wsAddress, server_crt, server_key, nil)
+	err = http.ListenAndServeTLS(wsAddress, certFile, keyFile, nil)
 	if err != nil {
 		panic(err)
 	}

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/dkrasnykh/gophkeeper/internal/server"
 	"log/slog"
 	"os"
 
+	"github.com/dkrasnykh/gophkeeper/internal/server"
 	"github.com/dkrasnykh/gophkeeper/internal/server/config"
 )
 
@@ -14,7 +14,7 @@ func main() {
 	cfg := config.MustLoad()
 	log.Info("starting application", slog.Any("config", cfg))
 
-	server.Run(log, cfg.WS.Address, cfg.DatabaseURL, cfg.QueryTimeout)
+	server.Run(log, cfg.WS.Address, cfg.DatabaseURL, cfg.QueryTimeout, cfg.CertFile, cfg.KeyFile, cfg.Key)
 
 	// TODO gracefull shutdown
 }

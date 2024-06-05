@@ -25,12 +25,14 @@ type Storager interface {
 type Service struct {
 	log     *slog.Logger
 	storage Storager
+	key     string
 }
 
-func New(log *slog.Logger, s Storager) *Service {
+func New(log *slog.Logger, s Storager, key string) *Service {
 	return &Service{
 		log:     log,
 		storage: s,
+		key:     key,
 	}
 }
 

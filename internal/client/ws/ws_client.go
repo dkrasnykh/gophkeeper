@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -43,10 +44,9 @@ func (ws *WSClient) Run(ctx context.Context, interrupt chan struct{}, token stri
 		slog.String("op", op),
 	)
 
-	dialer := websocket.Dialer{}
-	//URL = wss://localhost:4443/ws - for TLS connection
-	//dialer := *websocket.DefaultDialer
-	//dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	dialer := *websocket.DefaultDialer
+	dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 	headers := make(map[string][]string)
 	headers["token"] = append(headers["token"], token)
 
