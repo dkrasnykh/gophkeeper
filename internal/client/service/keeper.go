@@ -61,9 +61,9 @@ func NewKeeper(log *slog.Logger, ch chan models.Message, credStore CredentialsSt
 
 func (s *Keeper) ApplyMessage(ctx context.Context, msg models.Message) {
 	switch msg.Type {
-	case "update":
+	case models.Update:
 		s.apply(ctx, msg.Value)
-	case "snapshot":
+	case models.Snapshot:
 		var values [][]byte
 		_ = json.Unmarshal(msg.Value, &values)
 
@@ -83,28 +83,28 @@ func (s *Keeper) apply(ctx context.Context, value []byte) {
 	_ = json.Unmarshal(value, &header)
 
 	switch header.Type {
-	case "cred":
+	case models.CredItem.String():
 		var cred models.Credentials
 		_ = json.Unmarshal(value, &cred)
 		if err := s.saveCredentials(ctx, cred); err != nil {
 			log.Error("apply credentials message error", sl.Err(err))
 		}
 
-	case "text":
+	case models.TextItem.String():
 		var text models.Text
 		_ = json.Unmarshal(value, &text)
 		if err := s.saveText(ctx, text); err != nil {
 			log.Error("apply text message error", sl.Err(err))
 		}
 
-	case "bin":
+	case models.BinItem.String():
 		var bin models.Binary
 		_ = json.Unmarshal(value, &bin)
 		if err := s.saveBinary(ctx, bin); err != nil {
 			log.Error("apply binary message error", sl.Err(err))
 		}
 
-	case "card":
+	case models.CardItem.String():
 		var card models.Card
 		_ = json.Unmarshal(value, &card)
 		if err := s.saveCard(ctx, card); err != nil {

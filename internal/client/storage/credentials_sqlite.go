@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/dkrasnykh/gophkeeper/pkg/models"
 	"time"
+
+	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
 
 type CredentialsSqlite struct {
@@ -37,7 +38,7 @@ func (s *CredentialsSqlite) All(ctx context.Context) ([]models.Credentials, erro
 	res := []models.Credentials{}
 
 	for rows.Next() {
-		cred := models.Credentials{Type: "cred"}
+		cred := models.Credentials{Type: models.CredItem}
 		err = rows.Scan(&cred.Tag, &cred.Login, &cred.Password, &cred.Comment, &cred.Created)
 		if err != nil {
 			continue
@@ -60,7 +61,7 @@ func (s *CredentialsSqlite) ByLogin(ctx context.Context, login string) (models.C
 
 	row := stmt.QueryRowContext(newCtx, login)
 
-	var cred models.Credentials
+	cred := models.Credentials{Type: models.CredItem}
 	err = row.Scan(&cred.Tag, &cred.Login, &cred.Password, &cred.Comment, &cred.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

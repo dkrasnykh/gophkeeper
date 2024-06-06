@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/dkrasnykh/gophkeeper/pkg/models"
 	"time"
+
+	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
 
 type BinarySqlite struct {
@@ -36,7 +37,7 @@ func (s *BinarySqlite) All(ctx context.Context) ([]models.Binary, error) {
 
 	bins := []models.Binary{}
 	for rows.Next() {
-		bin := models.Binary{Type: "bin"}
+		bin := models.Binary{Type: models.BinItem}
 		err = rows.Scan(&bin.Tag, &bin.Key, &bin.Value, &bin.Comment, &bin.Created)
 		if err != nil {
 			continue
@@ -60,7 +61,7 @@ func (s *BinarySqlite) ByKey(ctx context.Context, key string) (models.Binary, er
 
 	row := stmt.QueryRowContext(newCtx, key)
 
-	var bin models.Binary
+	bin := models.Binary{Type: models.BinItem}
 	err = row.Scan(&bin.Tag, &bin.Key, &bin.Value, &bin.Comment, &bin.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

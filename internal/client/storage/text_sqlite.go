@@ -35,7 +35,7 @@ func (s *TextSqlite) All(ctx context.Context) ([]models.Text, error) {
 	rows, err := stmt.QueryContext(newCtx)
 	res := make([]models.Text, 0)
 	for rows.Next() {
-		text := models.Text{Type: "text"}
+		text := models.Text{Type: models.TextItem}
 		err = rows.Scan(&text.Tag, &text.Key, &text.Value, &text.Comment, &text.Created)
 		if err != nil {
 			continue
@@ -58,14 +58,14 @@ func (s *TextSqlite) ByKey(ctx context.Context, key string) (models.Text, error)
 
 	row := stmt.QueryRowContext(newCtx, key)
 
-	var text models.Text
+	text := models.Text{Type: models.TextItem}
 	err = row.Scan(&text.Tag, &text.Key, &text.Value, &text.Comment, &text.Created)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.Text{}, fmt.Errorf("%s: %w", op, ErrItemNotFound)
 		}
-		return models.Text{}, fmt.Errorf("%s, %w", err)
+		return models.Text{}, fmt.Errorf("%s, %w", op, err)
 	}
 
 	return text, nil

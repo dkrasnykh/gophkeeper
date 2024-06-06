@@ -28,7 +28,7 @@ func (s *Service) Validate(msg models.Message) (models.Message, error) {
 		return models.Message{}, fmt.Errorf("%op: %w", op, ErrInvalidMessage)
 	}
 	switch kind.Type {
-	case "cred":
+	case models.CredItem.String():
 		var cred models.Credentials
 		err := json.Unmarshal(msg.Value, &cred)
 		if err != nil {
@@ -39,7 +39,7 @@ func (s *Service) Validate(msg models.Message) (models.Message, error) {
 			)
 			return models.Message{}, fmt.Errorf("%s: %w", op, ErrInvalidMessage)
 		}
-	case "text":
+	case models.TextItem.String():
 		var text models.Text
 		err = json.Unmarshal(msg.Value, &text)
 		if err != nil {
@@ -50,7 +50,7 @@ func (s *Service) Validate(msg models.Message) (models.Message, error) {
 			)
 			return models.Message{}, fmt.Errorf("%s: %w", op, ErrInvalidMessage)
 		}
-	case "bin":
+	case models.BinItem.String():
 		var bin models.Binary
 		err = json.Unmarshal(msg.Value, &bin)
 		if err != nil {
@@ -61,7 +61,7 @@ func (s *Service) Validate(msg models.Message) (models.Message, error) {
 			)
 			return models.Message{}, fmt.Errorf("%s: %w", op, ErrInvalidMessage)
 		}
-	case "card":
+	case models.CardItem.String():
 		var card models.Card
 		err = json.Unmarshal(msg.Value, &card)
 		if err != nil {
@@ -79,7 +79,7 @@ func (s *Service) Validate(msg models.Message) (models.Message, error) {
 		)
 		return models.Message{}, fmt.Errorf("%s: %w", op, ErrInvalidMessage)
 	}
-	return models.Message{Type: "update", Value: msg.Value}, nil
+	return models.Message{Type: models.Update, Value: msg.Value}, nil
 }
 
 func (s *Service) convertItemListToMessage(items []storage.Item) models.Message {
@@ -99,7 +99,7 @@ func (s *Service) convertItemListToMessage(items []storage.Item) models.Message 
 		slog.Int("number of added items into message", len(items)),
 	)
 
-	return models.Message{Type: "snapshot", Value: msg}
+	return models.Message{Type: models.Snapshot, Value: msg}
 }
 
 func (s *Service) convertMessageToItem(userID int64, msg models.Message) storage.Item {
@@ -117,35 +117,35 @@ func (s *Service) convertMessageToItem(userID int64, msg models.Message) storage
 	_ = json.Unmarshal(msg.Value, &kind)
 
 	switch kind.Type {
-	case "cred":
+	case models.CredItem.String():
 		var cred models.Credentials
 		_ = json.Unmarshal(msg.Value, &cred)
 
-		item.Kind = hash.EncodeMsg([]byte("cred"), s.key)
+		item.Kind = hash.EncodeMsg([]byte(models.CredItem.String()), s.key)
 		item.Key = hash.EncodeMsg([]byte(cred.Login), s.key)
 		item.CreatedAt = cred.Created
 
-	case "text":
+	case models.TextItem.String():
 		var text models.Text
 		_ = json.Unmarshal(msg.Value, &text)
 
-		item.Kind = hash.EncodeMsg([]byte("text"), s.key)
+		item.Kind = hash.EncodeMsg([]byte(models.TextItem.String()), s.key)
 		item.Key = hash.EncodeMsg([]byte(text.Key), s.key)
 		item.CreatedAt = text.Created
 
-	case "bin":
+	case models.BinItem.String():
 		var bin models.Binary
 		_ = json.Unmarshal(msg.Value, &bin)
 
-		item.Kind = hash.EncodeMsg([]byte("bin"), s.key)
+		item.Kind = hash.EncodeMsg([]byte(models.BinItem.String()), s.key)
 		item.Key = hash.EncodeMsg([]byte(bin.Key), s.key)
 		item.CreatedAt = bin.Created
 
-	case "card":
+	case models.CardItem.String():
 		var card models.Card
 		_ = json.Unmarshal(msg.Value, &card)
 
-		item.Kind = hash.EncodeMsg([]byte("card"), s.key)
+		item.Kind = hash.EncodeMsg([]byte(models.CardItem.String()), s.key)
 		item.Key = hash.EncodeMsg([]byte(card.Number), s.key)
 		item.CreatedAt = card.Created
 	}

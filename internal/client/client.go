@@ -239,7 +239,7 @@ func (app *AppClient) Run(ctx context.Context, stop chan os.Signal) {
 					return
 				}
 				cred := models.Credentials{
-					Type:     "cred",
+					Type:     models.CredItem,
 					Tag:      modelAddCredentials.Inputs[0].Value(),
 					Login:    modelAddCredentials.Inputs[1].Value(),
 					Password: modelAddCredentials.Inputs[2].Value(),
@@ -266,7 +266,7 @@ func (app *AppClient) Run(ctx context.Context, stop chan os.Signal) {
 					return
 				}
 				text := models.Text{
-					Type:    "text",
+					Type:    models.TextItem,
 					Tag:     modelAddText.Inputs[0].Value(),
 					Key:     modelAddText.Inputs[1].Value(),
 					Value:   modelAddText.Inputs[2].Value(),
@@ -302,7 +302,7 @@ func (app *AppClient) Run(ctx context.Context, stop chan os.Signal) {
 					continue
 				}
 				bin := models.Binary{
-					Type:    "bin",
+					Type:    models.BinItem,
 					Tag:     modelAddBinary.Inputs[0].Value(),
 					Key:     fileName,
 					Value:   data,
@@ -329,7 +329,7 @@ func (app *AppClient) Run(ctx context.Context, stop chan os.Signal) {
 				}
 				cvv, _ := strconv.Atoi(modelAddCard.Inputs[3].Value())
 				card := models.Card{
-					Type:    "card",
+					Type:    models.CardItem,
 					Tag:     modelAddCard.Inputs[0].Value(),
 					Number:  modelAddCard.Inputs[1].Value(),
 					Exp:     modelAddCard.Inputs[2].Value(),

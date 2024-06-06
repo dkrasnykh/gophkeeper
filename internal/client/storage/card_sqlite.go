@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
-	"time"
 )
 
 type CardSqlite struct {
@@ -38,7 +38,7 @@ func (s *CardSqlite) All(ctx context.Context) ([]models.Card, error) {
 	cards := []models.Card{}
 
 	for rows.Next() {
-		card := models.Card{Type: "card"}
+		card := models.Card{Type: models.CardItem}
 		err = rows.Scan(&card.Tag, &card.Number, &card.Exp, &card.CVV, &card.Comment, &card.Created)
 		if err != nil {
 			continue
@@ -62,7 +62,7 @@ func (s *CardSqlite) ByNumber(ctx context.Context, number string) (models.Card, 
 
 	row := stmt.QueryRowContext(newCtx, number)
 
-	var card models.Card
+	card := models.Card{Type: models.CardItem}
 	err = row.Scan(&card.Tag, &card.Number, &card.Exp, &card.CVV, &card.Comment, &card.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
