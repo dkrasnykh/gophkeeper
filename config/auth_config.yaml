@@ -1,4 +1,6 @@
 database_url: "postgres://postgres:postgres@localhost:5432/auth?sslmode=disable"
+cert_file: "./keys/server-cert.pem"
+key_file: "./keys/server-key.pem"
 token_ttl: 12h
 connect_timeout: 2s
 grpc:

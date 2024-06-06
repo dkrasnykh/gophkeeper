@@ -19,7 +19,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	app := client.NewAppClient(log, cfg.StoragePath, cfg.GRPCAddress, cfg.WSURL, cfg.QueryTimeout)
+	app := client.NewAppClient(log, cfg.StoragePath, cfg.GRPCAddress, cfg.WSURL, cfg.QueryTimeout, cfg.CaCertFile)
 
 	stop := make(chan os.Signal, 1)
 

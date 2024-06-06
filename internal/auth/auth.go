@@ -16,7 +16,7 @@ type App struct {
 	db      *pgxpool.Pool
 }
 
-func New(log *slog.Logger, grpcPort int, databaseURL string, tokenTTL time.Duration, timeout time.Duration) *App {
+func New(log *slog.Logger, grpcPort int, databaseURL string, tokenTTL time.Duration, timeout time.Duration, certFile string, keyFile string) *App {
 	db, err := storage.New(databaseURL, timeout)
 	if err != nil {
 		panic(err)
@@ -26,7 +26,10 @@ func New(log *slog.Logger, grpcPort int, databaseURL string, tokenTTL time.Durat
 	appStorage := storage.NewAppPostgres(db, timeout)
 	authService := service.New(log, userStorage, appStorage, tokenTTL)
 
-	grpcApp := grpcapp.New(log, authService, grpcPort)
+	grpcApp, err := grpcapp.New(log, authService, grpcPort, certFile, keyFile)
+	if err != nil {
+		panic(err)
+	}
 
 	return &App{
 		grpcApp: grpcApp,

@@ -12,6 +12,8 @@ type Config struct {
 	DatabaseURL    string        `yaml:"database_url" env-required:"true"`
 	TokenTTL       time.Duration `yaml:"token_ttl" env-default:"1h"`
 	ConnectTimeout time.Duration `yaml:"connect_timeout" env-default:"2s"`
+	CertFile       string        `yaml:"cert_file" env-required:"true"`
+	KeyFile        string        `yaml:"key_file" env-required:"true"`
 	GRPC           GRPCConfig    `yaml:"grpc"`
 }
 

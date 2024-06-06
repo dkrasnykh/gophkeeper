@@ -3,12 +3,13 @@ package grpcclient
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
+	"github.com/dkrasnykh/gophkeeper/internal/client/tls"
 	authv1 "github.com/dkrasnykh/gophkeeper/protos/gen/go/auth"
 )
 
@@ -17,8 +18,13 @@ type GRPCClient struct {
 	client authv1.AuthClient
 }
 
-func NewGRPCClient(address string) (*GRPCClient, error) {
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func NewGRPCClient(address string, caCertFile string) (*GRPCClient, error) {
+	tlsCredentials, err := tls.LoadTLSCredentials(caCertFile)
+	if err != nil {
+		log.Fatal("cannot load TLS credentials: ", err)
+	}
+
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
 	if err != nil {
 		return nil, err
 	}

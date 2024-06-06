@@ -1,11 +1,15 @@
 package grpcapp
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
 
 	"google.golang.org/grpc"
+
+	"github.com/dkrasnykh/gophkeeper/internal/auth/tls"
+	"github.com/dkrasnykh/gophkeeper/pkg/logger/sl"
 )
 
 type App struct {
@@ -14,14 +18,25 @@ type App struct {
 	port       int
 }
 
-func New(log *slog.Logger, authService Auth, port int) *App {
-	gRPCServer := grpc.NewServer()
+func New(log *slog.Logger, authService Auth, port int, certFile string, keyFile string) (*App, error) {
+	tlsCredentials, err := tls.LoadTLSCredentials(certFile, keyFile)
+	if err != nil {
+		log.Error(
+			"failed to load cert and key from files",
+			sl.Err(err),
+			slog.String("cert file path", certFile),
+			slog.String("key file path", keyFile),
+		)
+		return nil, errors.New("get TLS credentials error")
+	}
+
+	gRPCServer := grpc.NewServer(grpc.Creds(tlsCredentials))
 	Register(gRPCServer, authService)
 	return &App{
 		log:        log,
 		gRPCServer: gRPCServer,
 		port:       port,
-	}
+	}, nil
 }
 
 func (a *App) MustRun() {

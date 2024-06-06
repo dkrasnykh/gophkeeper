@@ -36,16 +36,18 @@ type AppClient struct {
 	grpcAddress  string
 	WSURL        string
 	queryTimeout time.Duration
+	caCertFile   string
 }
 
 func NewAppClient(log *slog.Logger, storagePath string, grpcAddress string,
-	WSURL string, queryTimeout time.Duration) *AppClient {
+	WSURL string, queryTimeout time.Duration, caCertFile string) *AppClient {
 	return &AppClient{
 		log:          log,
 		storagePath:  storagePath,
 		grpcAddress:  grpcAddress,
 		WSURL:        WSURL,
 		queryTimeout: queryTimeout,
+		caCertFile:   caCertFile,
 	}
 }
 
@@ -84,7 +86,7 @@ func (app *AppClient) Run(ctx context.Context, stop chan os.Signal) {
 
 	keeper := service.NewKeeper(log, app.ch, dbCred, dbText, dbBin, dbCard)
 
-	app.grpcClient, err = grpcclient.NewGRPCClient(app.grpcAddress)
+	app.grpcClient, err = grpcclient.NewGRPCClient(app.grpcAddress, app.caCertFile)
 	if err != nil {
 		log.Error(
 			"failed connect to GRPC auth server",

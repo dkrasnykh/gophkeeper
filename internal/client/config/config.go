@@ -2,9 +2,10 @@ package config
 
 import (
 	"flag"
-	"github.com/ilyakaznacheev/cleanenv"
 	"os"
 	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type ClientConfig struct {
@@ -12,6 +13,7 @@ type ClientConfig struct {
 	GRPCAddress  string        `yaml:"grpc_address" env-required:"true"`
 	WSURL        string        `yaml:"ws_url" env-required:"true"`
 	QueryTimeout time.Duration `yaml:"query_timeout" env-default:"2s"`
+	CaCertFile   string        `yaml:"ca_cert_file" env-required:"true"`
 }
 
 func MustLoad() *ClientConfig {

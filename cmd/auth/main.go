@@ -16,7 +16,7 @@ func main() {
 	cfg := config.MustLoad()
 	log.Info("starting application", slog.Any("config", cfg))
 
-	app := auth.New(log, cfg.GRPC.Port, cfg.DatabaseURL, cfg.TokenTTL, cfg.ConnectTimeout)
+	app := auth.New(log, cfg.GRPC.Port, cfg.DatabaseURL, cfg.TokenTTL, cfg.ConnectTimeout, cfg.CertFile, cfg.KeyFile)
 	go app.MustRun()
 
 	stop := make(chan os.Signal, 1)
