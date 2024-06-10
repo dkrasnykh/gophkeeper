@@ -17,6 +17,7 @@ var (
 	ErrInternal       = errors.New("internal error")
 )
 
+//go:generate mockgen -source=keeper.go -destination=../storage/mocks/mock.go
 type Storager interface {
 	Snapshot(ctx context.Context, userID int64) ([]storage.Item, error)
 	Save(ctx context.Context, item storage.Item) error

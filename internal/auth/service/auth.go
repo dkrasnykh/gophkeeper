@@ -20,6 +20,7 @@ var (
 	ErrUserExists         = errors.New("user already exists")
 )
 
+//go:generate mockgen -source=auth.go -destination=../storage/mocks/mock.go
 type UserProvider interface {
 	SaveUser(ctx context.Context, email string, passHash []byte) (int64, error)
 	User(ctx context.Context, email string) (models.User, error)

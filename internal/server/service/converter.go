@@ -25,7 +25,7 @@ func (s *Service) Validate(msg models.Message) (models.Message, error) {
 			slog.String(`msg should contains "Type" field`, string(msg.Value)),
 			sl.Err(err),
 		)
-		return models.Message{}, fmt.Errorf("%op: %w", op, ErrInvalidMessage)
+		return models.Message{}, fmt.Errorf("%s: %w", op, ErrInvalidMessage)
 	}
 	switch kind.Type {
 	case models.CredItem.String():
