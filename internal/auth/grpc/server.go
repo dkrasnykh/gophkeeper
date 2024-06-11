@@ -1,3 +1,4 @@
+// grpcapp provides GRPC server configuration and start/shutdown methods.
 package grpcapp
 
 import (
@@ -64,6 +65,7 @@ func (a *App) Run() error {
 	return nil
 }
 
+// Stop graceful stopped GRPC server
 func (a *App) Stop() {
 	const op = "grpcapp.Stop"
 

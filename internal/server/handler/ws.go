@@ -20,6 +20,8 @@ type IService interface {
 	Validate(msg models.Message) (models.Message, error)
 }
 
+// Handler handle request for establish connection from user.
+// Handler sends and receives user messages.
 type Handler struct {
 	log        *slog.Logger
 	service    IService

@@ -12,6 +12,8 @@ import (
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
 
+// AppPostgres implements AppProvider interface.
+// auth service may be used by users of other applications.
 type AppPostgres struct {
 	db      *pgxpool.Pool
 	timeout time.Duration
@@ -24,6 +26,7 @@ func NewAppPostgres(db *pgxpool.Pool, timeout time.Duration) *AppPostgres {
 	}
 }
 
+// App returns application information by application id.
 func (s *AppPostgres) App(ctx context.Context, id int) (models.App, error) {
 	const op = "storage.postgres.App"
 

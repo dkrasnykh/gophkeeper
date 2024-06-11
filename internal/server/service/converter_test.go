@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/dkrasnykh/gophkeeper/internal/server/storage"
-	"github.com/dkrasnykh/gophkeeper/pkg/hash"
+	"github.com/dkrasnykh/gophkeeper/pkg/encrypt"
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
 
@@ -67,7 +67,7 @@ func TestConvertMessageToItemOK(t *testing.T) {
 
 	data := []byte(`{"type":"text","tag":"tag1","key":"key1","value":"value 1","comment":"comment","created":1}`)
 	msg := models.Message{Value: data}
-	expected := storage.Item{UserID: 1, Kind: hash.EncodeMsg([]byte("text"), key), Key: hash.EncodeMsg([]byte("key1"), key), Data: []byte(hash.EncodeMsg(msg.Value, key)), CreatedAt: 1}
+	expected := storage.Item{UserID: 1, Kind: encrypt.EncodeMsg([]byte("text"), key), Key: encrypt.EncodeMsg([]byte("key1"), key), Data: []byte(encrypt.EncodeMsg(msg.Value, key)), CreatedAt: 1}
 	converted := s.convertMessageToItem(1, msg)
 
 	assert.Equal(t, expected, converted)

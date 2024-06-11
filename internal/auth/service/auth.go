@@ -30,6 +30,7 @@ type AppProvider interface {
 	App(ctx context.Context, id int) (models.App, error)
 }
 
+// Auth implements Auth interface (grpcapp module).
 type Auth struct {
 	log          *slog.Logger
 	userProvider UserProvider
@@ -46,6 +47,8 @@ func New(log *slog.Logger, userProvider UserProvider, appProvider AppProvider, t
 	}
 }
 
+// Register method hashes password and saves user data into database.
+// It returns ErrUserExists, if user with email already registered.
 func (a *Auth) Register(ctx context.Context, email string, password string) (userID int64, err error) {
 	const op = "auth.Register"
 	log := a.log.With(
@@ -75,6 +78,8 @@ func (a *Auth) Register(ctx context.Context, email string, password string) (use
 	return id, nil
 }
 
+// Login method checks credentials and returns JWT token.
+// It returns ErrInvalidCredentials, if user with credentials does not registered.
 func (a *Auth) Login(ctx context.Context, email string, password string, appID int) (string, error) {
 	const op = "auth.Login"
 	log := a.log.With(

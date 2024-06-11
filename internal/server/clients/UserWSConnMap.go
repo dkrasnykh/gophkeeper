@@ -1,10 +1,13 @@
 package clients
 
 import (
-	"github.com/gorilla/websocket"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
+// UserWSConnMap concurrency save structure, contains hashmap which contains user id (int64) key and slice of user websocket connections.
+// Same user may connect with different clients.
 type UserWSConnMap struct {
 	mu    *sync.RWMutex
 	value map[int64][]*websocket.Conn

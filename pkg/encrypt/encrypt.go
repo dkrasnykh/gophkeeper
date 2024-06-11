@@ -1,4 +1,5 @@
-package hash
+// encrypt module provides methods for encrypt and decrypt the text using the AES (Advanced Encryption Standard) algorithm.
+package encrypt
 
 import (
 	"crypto/aes"

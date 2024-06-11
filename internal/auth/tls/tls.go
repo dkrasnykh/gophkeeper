@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+// LoadTLSCredentials connection secured by server-side TLS.
 // https://dev.to/techschoolguru/how-to-secure-grpc-connection-with-ssl-tls-in-go-4ph
 func LoadTLSCredentials(certFile, keyFile string) (credentials.TransportCredentials, error) {
 	// Load server's certificate and private key

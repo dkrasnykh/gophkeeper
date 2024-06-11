@@ -1,3 +1,5 @@
+// grpcapp module provides auth contract implementation.
+// auth service contract is defined in the auth.proto file (module "protos").
 package grpcapp
 
 import (

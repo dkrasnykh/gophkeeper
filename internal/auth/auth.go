@@ -11,6 +11,8 @@ import (
 	"github.com/dkrasnykh/gophkeeper/internal/auth/storage"
 )
 
+// App with GRPC server and database connections pool.
+// Provides start/stop methods.
 type App struct {
 	grpcApp *grpcapp.App
 	db      *pgxpool.Pool

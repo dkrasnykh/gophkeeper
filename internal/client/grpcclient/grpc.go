@@ -1,3 +1,5 @@
+// grpcclient module provides GRPC client for auth service.
+// auth contract into protos module
 package grpcclient
 
 import (
@@ -39,7 +41,7 @@ func (c *GRPCClient) Register(ctx context.Context, login string, password string
 	_, err := c.client.Register(ctx, &req)
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
-			// sends error messages into UI TODO change logic
+			// sends error messages into UI TODO change errors handling into UI
 			switch e.Code() {
 			case codes.AlreadyExists:
 				return fmt.Errorf("user with email %s already registered", login)
@@ -60,7 +62,7 @@ func (c *GRPCClient) Login(ctx context.Context, login string, password string) (
 	resp, err := c.client.Login(ctx, &req)
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
-			// sends error messages into UI TODO change logic
+			// sends error messages into UI TODO change errors handling into UI
 			switch e.Code() {
 			case codes.InvalidArgument:
 				return "", fmt.Errorf("invalid login or password")

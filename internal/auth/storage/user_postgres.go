@@ -13,6 +13,7 @@ import (
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
 
+// UserPostgres implements UserProvider interface.
 type UserPostgres struct {
 	db      *pgxpool.Pool
 	timeout time.Duration
@@ -25,6 +26,8 @@ func NewUserPostgres(db *pgxpool.Pool, timeout time.Duration) *UserPostgres {
 	}
 }
 
+// SaveUser saved new user into database.
+// It returns ErrUserExists error, if user alredy inserted into database.
 func (s *UserPostgres) SaveUser(ctx context.Context, email string, passHash []byte) (int64, error) {
 	const op = "storage.postgres.SaveUser"
 	newCtx, cancel := context.WithTimeout(ctx, s.timeout)
@@ -44,6 +47,8 @@ func (s *UserPostgres) SaveUser(ctx context.Context, email string, passHash []by
 	return id, nil
 }
 
+// User returns user credentials by email.
+// It returns ErrUserNotFound error, if user with email does not registered.
 func (s *UserPostgres) User(ctx context.Context, email string) (models.User, error) {
 	const op = "storage.postgres.User"
 	newCtx, cancel := context.WithTimeout(ctx, s.timeout)

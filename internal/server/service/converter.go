@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/dkrasnykh/gophkeeper/internal/server/storage"
-	"github.com/dkrasnykh/gophkeeper/pkg/hash"
+	"github.com/dkrasnykh/gophkeeper/pkg/encrypt"
 	"github.com/dkrasnykh/gophkeeper/pkg/logger/sl"
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
@@ -90,7 +90,7 @@ func (s *Service) convertItemListToMessage(items []storage.Item) models.Message 
 
 	values := make([][]byte, 0, len(items))
 	for _, item := range items {
-		decoded := hash.DecodeMsg(string(item.Data), s.key)
+		decoded := encrypt.DecodeMsg(string(item.Data), s.key)
 		values = append(values, []byte(decoded))
 	}
 	msg, _ := json.Marshal(values)
@@ -110,7 +110,7 @@ func (s *Service) convertMessageToItem(userID int64, msg models.Message) storage
 	)
 
 	var item storage.Item
-	item.Data = []byte(hash.EncodeMsg(msg.Value, s.key))
+	item.Data = []byte(encrypt.EncodeMsg(msg.Value, s.key))
 	item.UserID = userID
 
 	var kind struct{ Type string }
@@ -121,32 +121,32 @@ func (s *Service) convertMessageToItem(userID int64, msg models.Message) storage
 		var cred models.Credentials
 		_ = json.Unmarshal(msg.Value, &cred)
 
-		item.Kind = hash.EncodeMsg([]byte(models.CredItem.String()), s.key)
-		item.Key = hash.EncodeMsg([]byte(cred.Login), s.key)
+		item.Kind = encrypt.EncodeMsg([]byte(models.CredItem.String()), s.key)
+		item.Key = encrypt.EncodeMsg([]byte(cred.Login), s.key)
 		item.CreatedAt = cred.Created
 
 	case models.TextItem.String():
 		var text models.Text
 		_ = json.Unmarshal(msg.Value, &text)
 
-		item.Kind = hash.EncodeMsg([]byte(models.TextItem.String()), s.key)
-		item.Key = hash.EncodeMsg([]byte(text.Key), s.key)
+		item.Kind = encrypt.EncodeMsg([]byte(models.TextItem.String()), s.key)
+		item.Key = encrypt.EncodeMsg([]byte(text.Key), s.key)
 		item.CreatedAt = text.Created
 
 	case models.BinItem.String():
 		var bin models.Binary
 		_ = json.Unmarshal(msg.Value, &bin)
 
-		item.Kind = hash.EncodeMsg([]byte(models.BinItem.String()), s.key)
-		item.Key = hash.EncodeMsg([]byte(bin.Key), s.key)
+		item.Kind = encrypt.EncodeMsg([]byte(models.BinItem.String()), s.key)
+		item.Key = encrypt.EncodeMsg([]byte(bin.Key), s.key)
 		item.CreatedAt = bin.Created
 
 	case models.CardItem.String():
 		var card models.Card
 		_ = json.Unmarshal(msg.Value, &card)
 
-		item.Kind = hash.EncodeMsg([]byte(models.CardItem.String()), s.key)
-		item.Key = hash.EncodeMsg([]byte(card.Number), s.key)
+		item.Kind = encrypt.EncodeMsg([]byte(models.CardItem.String()), s.key)
+		item.Key = encrypt.EncodeMsg([]byte(card.Number), s.key)
 		item.CreatedAt = card.Created
 	}
 

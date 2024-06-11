@@ -1,3 +1,8 @@
+// client module run client application and show CLI commands.
+// CLI view models provides into module cli.
+// Commands for registration, login, selecting all elements, saving credentials data, text data, binary data, card data are defined for the user.
+// Application includes websocket client to communicate with server.
+// If the connection to the server is interrupted, then websocket client sends message to application using "interrupt" channel.
 package client
 
 import (

@@ -1,3 +1,8 @@
+// ws module establish websocket connection with server
+// It starts two gorutine for reading and writing messages.
+// When the client just establishes a connection, client received from server actual data snapshot.
+// If user saved new private data, ws sends to the server update.
+// If same user used other client and makes changes, then current client receives update message.
 package ws
 
 import (

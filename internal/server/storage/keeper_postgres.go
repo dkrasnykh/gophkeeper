@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// KeeperPostgres implements Storager interface.
 type KeeperPostgres struct {
 	db      *pgxpool.Pool
 	timeout time.Duration
@@ -21,6 +22,7 @@ func NewKeeperPostgres(db *pgxpool.Pool, timeout time.Duration) *KeeperPostgres 
 	}
 }
 
+// Snapshot collect all actual user data with unique keys.
 func (s *KeeperPostgres) Snapshot(ctx context.Context, userID int64) ([]Item, error) {
 	const op = "storage.postgres.Snapshot"
 
@@ -39,6 +41,7 @@ func (s *KeeperPostgres) Snapshot(ctx context.Context, userID int64) ([]Item, er
 	return res, nil
 }
 
+// Save method insert into database user encrypted message.
 func (s *KeeperPostgres) Save(ctx context.Context, item Item) error {
 	const op = "storage.postgres.Save"
 

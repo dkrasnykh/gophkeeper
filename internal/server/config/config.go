@@ -1,3 +1,7 @@
+// Module config retrieves the application configuration from yaml file.
+// The path to yaml configuration file is determined on command line flag ("config") or in environment variable "AUTH_CONFIG_PATH".
+// Priority: flag > env > default.
+// Default value is empty string.
 package config
 
 import (
@@ -21,6 +25,8 @@ type WSConfig struct {
 	Address string `yaml:"address"`
 }
 
+// MustLoad parses the file into the configuration structure Config.
+// Prefix "Must" method name means that the method does not return an error. It executes or throws panic.
 func MustLoad() *Config {
 	path := configPath()
 	if path == "" {
@@ -40,6 +46,9 @@ func MustLoad() *Config {
 	return &cfg
 }
 
+// configPath fetches config path from command line flag or environment variable SERVER_CONFIG_PATH.
+// Priority: flag > env > default.
+// Default value is empty string.
 func configPath() string {
 	var res string
 	flag.StringVar(&res, "config", "", "path to config file")
