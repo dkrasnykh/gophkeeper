@@ -23,5 +23,8 @@ func migrate(db *sql.DB, version int64) error {
 		return fmt.Errorf("sqlite3 migrate up: %w", err)
 	}
 
+	if err := db.Close(); err != nil {
+		return fmt.Errorf("sqlite migrate close db: %w", err)
+	}
 	return nil
 }

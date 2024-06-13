@@ -15,11 +15,15 @@ type CredentialsSqlite struct {
 	timeout time.Duration
 }
 
-func NewCredentialsSqlite(db *sql.DB, timeout time.Duration) *CredentialsSqlite {
+func NewCredentialsSqlite(storagePath string, timeout time.Duration) (*CredentialsSqlite, error) {
+	db, err := newSQLDB(storagePath)
+	if err != nil {
+		return nil, err
+	}
 	return &CredentialsSqlite{
 		db:      db,
 		timeout: timeout,
-	}
+	}, nil
 }
 
 func (s *CredentialsSqlite) All(ctx context.Context) ([]models.Credentials, error) {
@@ -105,6 +109,13 @@ func (s *CredentialsSqlite) Update(ctx context.Context, cred models.Credentials)
 	_, err = stmt.ExecContext(newCtx, cred.Tag, cred.Password, cred.Comment, cred.Created, cred.Login)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (s *CredentialsSqlite) Close() error {
+	if err := s.db.Close(); err != nil {
+		return ErrInternal
 	}
 	return nil
 }

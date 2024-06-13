@@ -15,11 +15,15 @@ type BinarySqlite struct {
 	timeout time.Duration
 }
 
-func NewBinarySqlite(db *sql.DB, timeout time.Duration) *BinarySqlite {
+func NewBinarySqlite(storagePath string, timeout time.Duration) (*BinarySqlite, error) {
+	db, err := newSQLDB(storagePath)
+	if err != nil {
+		return nil, err
+	}
 	return &BinarySqlite{
 		db:      db,
 		timeout: timeout,
-	}
+	}, nil
 }
 
 func (s *BinarySqlite) All(ctx context.Context) ([]models.Binary, error) {
@@ -108,5 +112,12 @@ func (s *BinarySqlite) Update(ctx context.Context, bin models.Binary) error {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
+	return nil
+}
+
+func (s *BinarySqlite) Close() error {
+	if err := s.db.Close(); err != nil {
+		return ErrInternal
+	}
 	return nil
 }

@@ -32,5 +32,8 @@ func Convert(creds []models.Credentials, texts []models.Text, bins []models.Bina
 			viewList = append(viewList, fmt.Sprintf(`tag=%s; number=%s; exp=%s; cvv=%d; comment=%s`, c.Tag, c.Number, c.Exp, c.CVV, c.Comment))
 		}
 	}
+	if len(viewList) == 0 {
+		viewList = append(viewList, "secrets list is empty")
+	}
 	return viewList
 }

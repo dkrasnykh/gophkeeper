@@ -9,7 +9,12 @@ import (
 	"github.com/dkrasnykh/gophkeeper/pkg/models"
 )
 
+type closeable interface {
+	Close() error
+}
+
 type CredentialsStorager interface {
+	closeable
 	All(ctx context.Context) ([]models.Credentials, error)
 	ByLogin(ctx context.Context, login string) (models.Credentials, error)
 	Save(ctx context.Context, cred models.Credentials) error
@@ -17,6 +22,7 @@ type CredentialsStorager interface {
 }
 
 type TextStorager interface {
+	closeable
 	All(ctx context.Context) ([]models.Text, error)
 	ByKey(ctx context.Context, key string) (models.Text, error)
 	Save(ctx context.Context, text models.Text) error
@@ -24,6 +30,7 @@ type TextStorager interface {
 }
 
 type BinaryStorager interface {
+	closeable
 	All(ctx context.Context) ([]models.Binary, error)
 	ByKey(ctx context.Context, key string) (models.Binary, error)
 	Save(ctx context.Context, bin models.Binary) error
@@ -31,6 +38,7 @@ type BinaryStorager interface {
 }
 
 type CardStorager interface {
+	closeable
 	All(ctx context.Context) ([]models.Card, error)
 	ByNumber(ctx context.Context, number string) (models.Card, error)
 	Save(ctx context.Context, card models.Card) error
@@ -70,6 +78,25 @@ func (s *Keeper) ApplyMessage(ctx context.Context, msg models.Message) {
 		for _, value := range values {
 			s.apply(ctx, value)
 		}
+	}
+}
+
+func (s *Keeper) Stop() {
+	const op = "service.Keeper.Stop"
+	log := s.log.With(
+		slog.String("op", op),
+	)
+	if err := s.binStore.Close(); err != nil {
+		log.Error("failed to close database connection for binary storage")
+	}
+	if err := s.cardStore.Close(); err != nil {
+		log.Error("failed to close database connection for card storage")
+	}
+	if err := s.textStore.Close(); err != nil {
+		log.Error("failed to close database connection for text storage")
+	}
+	if err := s.credStore.Close(); err != nil {
+		log.Error("failed to close database connection for credentials storage")
 	}
 }
 

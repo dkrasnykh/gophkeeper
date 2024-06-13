@@ -15,11 +15,15 @@ type CardSqlite struct {
 	timeout time.Duration
 }
 
-func NewCardSqlite(db *sql.DB, timeout time.Duration) *CardSqlite {
+func NewCardSqlite(storagePath string, timeout time.Duration) (*CardSqlite, error) {
+	db, err := newSQLDB(storagePath)
+	if err != nil {
+		return nil, err
+	}
 	return &CardSqlite{
 		db:      db,
 		timeout: timeout,
-	}
+	}, nil
 }
 
 func (s *CardSqlite) All(ctx context.Context) ([]models.Card, error) {
@@ -106,6 +110,13 @@ func (s *CardSqlite) Update(ctx context.Context, card models.Card) error {
 	_, err = stmt.ExecContext(newCtx, card.Tag, card.Exp, card.CVV, card.Comment, card.Created, card.Number)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (s *CardSqlite) Close() error {
+	if err := s.db.Close(); err != nil {
+		return ErrInternal
 	}
 	return nil
 }

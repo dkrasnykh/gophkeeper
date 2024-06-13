@@ -13,16 +13,24 @@ var (
 	ErrItemNotFound = errors.New("item not found")
 )
 
-func New(storagePath string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", storagePath)
+func Migrate(storagePath string) error {
+	db, err := newSQLDB(storagePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed connect to database %w", ErrInternal)
+		return err
 	}
 
 	err = migrate(db, 1)
 	if err != nil {
-		return nil, fmt.Errorf("failed migrate database schema %w", ErrInternal)
+		return fmt.Errorf("failed migrate database schema %w", ErrInternal)
 	}
 
+	return nil
+}
+
+func newSQLDB(storagePath string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", storagePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed connect to database %w", ErrInternal)
+	}
 	return db, nil
 }

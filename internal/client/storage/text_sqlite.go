@@ -15,11 +15,15 @@ type TextSqlite struct {
 	timeout time.Duration
 }
 
-func NewTextSqlite(db *sql.DB, timeout time.Duration) *TextSqlite {
+func NewTextSqlite(storagePath string, timeout time.Duration) (*TextSqlite, error) {
+	db, err := newSQLDB(storagePath)
+	if err != nil {
+		return nil, err
+	}
 	return &TextSqlite{
 		db:      db,
 		timeout: timeout,
-	}
+	}, nil
 }
 
 func (s *TextSqlite) All(ctx context.Context) ([]models.Text, error) {
@@ -101,6 +105,13 @@ func (s *TextSqlite) Update(ctx context.Context, text models.Text) error {
 	_, err = stmt.ExecContext(newCtx, text.Tag, text.Value, text.Comment, text.Created, text.Key)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (s *TextSqlite) Close() error {
+	if err := s.db.Close(); err != nil {
+		return ErrInternal
 	}
 	return nil
 }

@@ -33,8 +33,8 @@ type TextSqliteTestSuite struct {
 }
 
 func (ts *TextSqliteTestSuite) SetupSuite() {
-	db, _ := New("client_test.db")
-	ts.testTextStorager = NewTextSqlite(db, time.Second*5)
+	_ = Migrate("client_test.db")
+	ts.testTextStorager, _ = NewTextSqlite("client_test.db", time.Second*5)
 }
 
 func (ts *TextSqlite) clean(ctx context.Context) error {

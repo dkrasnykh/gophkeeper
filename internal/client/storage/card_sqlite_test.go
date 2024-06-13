@@ -41,8 +41,8 @@ type CardSqliteTestSuite struct {
 }
 
 func (ts *CardSqliteTestSuite) SetupSuite() {
-	db, _ := New("client_test.db")
-	ts.testCardStorager = NewCardSqlite(db, time.Second*5)
+	_ = Migrate("client_test.db")
+	ts.testCardStorager, _ = NewCardSqlite("client_test.db", time.Second*5)
 }
 
 func TestCardSqlite(t *testing.T) {

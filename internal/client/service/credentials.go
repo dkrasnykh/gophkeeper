@@ -12,6 +12,7 @@ import (
 
 func (s *Keeper) SendSaveCredentials(ctx context.Context, cred models.Credentials) error {
 	s.ch <- credentialsToMsg(cred)
+
 	return s.saveCredentials(ctx, cred)
 }
 

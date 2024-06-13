@@ -6,6 +6,7 @@ package config
 
 import (
 	"flag"
+	"log"
 	"os"
 	"time"
 
@@ -25,7 +26,8 @@ type ClientConfig struct {
 func MustLoad() *ClientConfig {
 	path := configPath()
 	if path == "" {
-		panic("config path is empty")
+		log.Print("config path is empty")
+		os.Exit(1)
 	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {

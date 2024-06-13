@@ -14,6 +14,7 @@ import (
 
 func (s *Keeper) SendSaveCard(ctx context.Context, card models.Card) error {
 	s.ch <- s.cardToMsg(card)
+
 	return s.saveCard(ctx, card)
 }
 

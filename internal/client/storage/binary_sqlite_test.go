@@ -41,8 +41,8 @@ type BinarySqliteTestSuite struct {
 }
 
 func (ts *BinarySqliteTestSuite) SetupSuite() {
-	db, _ := New("client_test.db")
-	ts.testBinaryStorager = NewBinarySqlite(db, time.Second*5)
+	_ = Migrate("client_test.db")
+	ts.testBinaryStorager, _ = NewBinarySqlite("client_test.db", time.Second*5)
 }
 
 func TestBinarySqlite(t *testing.T) {

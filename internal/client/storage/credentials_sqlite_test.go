@@ -41,8 +41,8 @@ type CredentialsSqliteTestSuite struct {
 }
 
 func (ts *CredentialsSqliteTestSuite) SetupSuite() {
-	db, _ := New("client_test.db")
-	ts.testCredentialsStorager = NewCredentialsSqlite(db, time.Second*5)
+	_ = Migrate("client_test.db")
+	ts.testCredentialsStorager, _ = NewCredentialsSqlite("client_test.db", time.Second*5)
 }
 
 func TestCredentialsSqlite(t *testing.T) {

@@ -12,6 +12,7 @@ import (
 
 func (s *Keeper) SendSaveText(ctx context.Context, text models.Text) error {
 	s.ch <- textToMsg(text)
+
 	return s.saveText(ctx, text)
 }
 

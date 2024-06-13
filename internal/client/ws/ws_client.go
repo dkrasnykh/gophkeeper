@@ -63,7 +63,7 @@ func (ws *WSClient) Run(ctx context.Context, interrupt chan struct{}, token stri
 			"failed establish websocket connection",
 			sl.Err(err),
 		)
-		interrupt <- struct{}{}
+		close(interrupt)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (ws *WSClient) read(ctx context.Context, interrupt chan struct{}) {
 				continue
 			}
 			if msg.Type == "error" && string(msg.Value) == "invalid token" {
-				interrupt <- struct{}{}
+				close(interrupt)
 				return
 			}
 
@@ -142,10 +142,9 @@ func (ws *WSClient) write(ctx context.Context, token string, interrupt chan stru
 			err := ws.conn.WriteMessage(websocket.TextMessage, data)
 			if err != nil {
 				// TODO implement restoring connection to the server
-				interrupt <- struct{}{}
+				close(interrupt)
 				return
 			}
-
 		}
 	}
 }
