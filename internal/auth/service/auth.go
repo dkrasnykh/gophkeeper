@@ -18,16 +18,19 @@ import (
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrUserExists         = errors.New("user already exists")
+	ErrInvalidData        = errors.New("invalid request")
 )
 
 //go:generate mockgen -source=auth.go -destination=../storage/mocks/mock.go
 type UserProvider interface {
 	SaveUser(ctx context.Context, email string, passHash []byte) (int64, error)
 	User(ctx context.Context, email string) (models.User, error)
+	Close()
 }
 
 type AppProvider interface {
 	App(ctx context.Context, id int) (models.App, error)
+	Close()
 }
 
 // Auth implements Auth interface (grpcapp module).
@@ -56,25 +59,26 @@ func (a *Auth) Register(ctx context.Context, email string, password string) (use
 		slog.String("email", email),
 	)
 
-	log.Info("registering user")
+	if err := validate(email, password); err != nil {
+		return 0, err
+	}
+
+	log.Debug("registering user")
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Error("failed to generate password", sl.Err(err))
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
 	id, err := a.userProvider.SaveUser(ctx, email, passHash)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserExists) {
-			log.Error("user already exists", sl.Err(err))
 			return 0, fmt.Errorf("%s: %w", op, ErrUserExists)
 		}
-		log.Error("failed to save user", sl.Err(err))
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	log.Info("user registered")
+	log.Debug("user registered")
 	return id, nil
 }
 
@@ -87,20 +91,21 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 		slog.String("username", email),
 	)
 
-	log.Info("attempting to login user")
+	if err := validate(email, password); err != nil {
+		return "", err
+	}
+
+	log.Debug("attempting to login user")
 
 	user, err := a.userProvider.User(ctx, email)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
-			log.Error("user not found", sl.Err(err))
 			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 		}
-		log.Error("failed to get user", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
-		log.Info("invalid credentials", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 	}
 
@@ -117,4 +122,20 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 	}
 
 	return token, nil
+}
+
+func validate(email string, password string) error {
+	switch {
+	case email == "":
+		return fmt.Errorf("%s, %w", "email is required", ErrInvalidData)
+	case password == "":
+		return fmt.Errorf("%s, %w", "password is required", ErrInvalidData)
+	default:
+		return nil
+	}
+}
+
+func (a *Auth) Close() {
+	a.userProvider.Close()
+	a.appProvider.Close()
 }

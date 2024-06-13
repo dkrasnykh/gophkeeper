@@ -9,40 +9,51 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/dkrasnykh/gophkeeper/internal/auth/config"
 	"github.com/dkrasnykh/gophkeeper/internal/auth/tls"
 	"github.com/dkrasnykh/gophkeeper/pkg/logger/sl"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 )
 
 type App struct {
 	log        *slog.Logger
 	gRPCServer *grpc.Server
+	service    Auth
 	port       int
 }
 
-func New(log *slog.Logger, authService Auth, port int, certFile string, keyFile string) (*App, error) {
-	tlsCredentials, err := tls.LoadTLSCredentials(certFile, keyFile)
+func New(log *slog.Logger, authService Auth, cfg *config.Config) (*App, error) {
+	tlsCredentials, err := tls.LoadTLSCredentials(cfg.CertFile, cfg.KeyFile)
 	if err != nil {
 		log.Error(
 			"failed to load cert and key from files",
 			sl.Err(err),
-			slog.String("cert file path", certFile),
-			slog.String("key file path", keyFile),
+			slog.String("cert file path", cfg.CertFile),
+			slog.String("key file path", cfg.KeyFile),
 		)
 		return nil, errors.New("get TLS credentials error")
 	}
 
-	gRPCServer := grpc.NewServer(grpc.Creds(tlsCredentials))
+	gRPCServer := grpc.NewServer(
+		grpc.UnaryInterceptor(logging.UnaryServerInterceptor(&rpcLogger{log: log})),
+		grpc.Creds(tlsCredentials),
+	)
 	Register(gRPCServer, authService)
 	return &App{
 		log:        log,
 		gRPCServer: gRPCServer,
-		port:       port,
+		service:    authService,
+		port:       cfg.GRPC.Port,
 	}, nil
 }
 
 func (a *App) MustRun() {
 	if err := a.Run(); err != nil {
-		panic(err)
+		a.log.Error(
+			"error running GRPC server",
+			sl.Err(err),
+		)
+		return
 	}
 }
 
@@ -73,4 +84,5 @@ func (a *App) Stop() {
 		Info("stopping gRPC server", slog.Int("port", a.port))
 
 	a.gRPCServer.GracefulStop()
+	a.service.Close()
 }

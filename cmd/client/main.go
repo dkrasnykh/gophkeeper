@@ -14,12 +14,12 @@ import (
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	cfg := config.MustLoad()
-	log.Info("starting client application", slog.Any("config", cfg))
+	log.Debug("starting client application", slog.Any("config", cfg))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	app := client.NewAppClient(log, cfg.StoragePath, cfg.GRPCAddress, cfg.WSURL, cfg.QueryTimeout, cfg.CaCertFile)
+	app := client.NewAppClient(log, cfg)
 
 	stop := make(chan os.Signal, 1)
 
@@ -28,10 +28,10 @@ func main() {
 	signal.Notify(stop, syscall.SIGINT)
 
 	sign := <-stop
-	log.Info("stopping application", slog.String("signal", sign.String()))
+	log.Debug("stopping application", slog.String("signal", sign.String()))
 
 	cancel()
 	app.Stop()
 
-	log.Info("application stopped")
+	log.Debug("application stopped")
 }

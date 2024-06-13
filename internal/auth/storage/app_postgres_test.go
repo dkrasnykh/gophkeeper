@@ -54,8 +54,9 @@ func (ts *PostgresTestSuite) SetupSuite() {
 	ts.tc = pgc
 	databaseURL := fmt.Sprintf("postgres://postgres:postgres@%s:%s/testdb?sslmode=disable", host, port.Port())
 
-	db, err := New(databaseURL, time.Second*10)
-	storage := NewAppPostgres(db, time.Second*10)
+	err = Migrate(databaseURL, time.Second*10)
+	require.NoError(ts.T(), err)
+	storage, err := NewAppPostgres(databaseURL, time.Second*10)
 	require.NoError(ts.T(), err)
 
 	ts.AppProvider = storage

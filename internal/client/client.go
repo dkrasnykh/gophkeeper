@@ -24,6 +24,7 @@ import (
 	viewlist "github.com/dkrasnykh/gophkeeper/internal/client/cli/view_list"
 	viewlogin "github.com/dkrasnykh/gophkeeper/internal/client/cli/view_login"
 	viewregister "github.com/dkrasnykh/gophkeeper/internal/client/cli/view_register"
+	"github.com/dkrasnykh/gophkeeper/internal/client/config"
 	"github.com/dkrasnykh/gophkeeper/internal/client/grpcclient"
 	"github.com/dkrasnykh/gophkeeper/internal/client/service"
 	"github.com/dkrasnykh/gophkeeper/internal/client/storage"
@@ -44,15 +45,14 @@ type AppClient struct {
 	caCertFile   string
 }
 
-func NewAppClient(log *slog.Logger, storagePath string, grpcAddress string,
-	WSURL string, queryTimeout time.Duration, caCertFile string) *AppClient {
+func NewAppClient(log *slog.Logger, cfg *config.ClientConfig) *AppClient {
 	return &AppClient{
 		log:          log,
-		storagePath:  storagePath,
-		grpcAddress:  grpcAddress,
-		WSURL:        WSURL,
-		queryTimeout: queryTimeout,
-		caCertFile:   caCertFile,
+		storagePath:  cfg.StoragePath,
+		grpcAddress:  cfg.GRPCAddress,
+		WSURL:        cfg.WSURL,
+		queryTimeout: cfg.QueryTimeout,
+		caCertFile:   cfg.CaCertFile,
 	}
 }
 

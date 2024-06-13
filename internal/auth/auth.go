@@ -2,10 +2,8 @@ package auth
 
 import (
 	"log/slog"
-	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
+	"github.com/dkrasnykh/gophkeeper/internal/auth/config"
 	grpcapp "github.com/dkrasnykh/gophkeeper/internal/auth/grpc"
 	"github.com/dkrasnykh/gophkeeper/internal/auth/service"
 	"github.com/dkrasnykh/gophkeeper/internal/auth/storage"
@@ -15,28 +13,32 @@ import (
 // Provides start/stop methods.
 type App struct {
 	grpcApp *grpcapp.App
-	db      *pgxpool.Pool
 }
 
-func New(log *slog.Logger, grpcPort int, databaseURL string, tokenTTL time.Duration, timeout time.Duration, certFile string, keyFile string) *App {
-	db, err := storage.New(databaseURL, timeout)
+func New(log *slog.Logger, cfg *config.Config) (*App, error) {
+	err := storage.Migrate(cfg.DatabaseURL, cfg.ConnectTimeout)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	userStorage := storage.NewUserPostgres(db, timeout)
-	appStorage := storage.NewAppPostgres(db, timeout)
-	authService := service.New(log, userStorage, appStorage, tokenTTL)
-
-	grpcApp, err := grpcapp.New(log, authService, grpcPort, certFile, keyFile)
+	userStorage, err := storage.NewUserPostgres(cfg.DatabaseURL, cfg.ConnectTimeout)
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+	appStorage, err := storage.NewAppPostgres(cfg.DatabaseURL, cfg.ConnectTimeout)
+	if err != nil {
+		return nil, err
+	}
+	authService := service.New(log, userStorage, appStorage, cfg.TokenTTL)
+
+	grpcApp, err := grpcapp.New(log, authService, cfg)
+	if err != nil {
+		return nil, err
 	}
 
 	return &App{
 		grpcApp: grpcApp,
-		db:      db,
-	}
+	}, nil
 }
 
 func (app *App) MustRun() {
@@ -45,5 +47,4 @@ func (app *App) MustRun() {
 
 func (app *App) Stop() {
 	app.grpcApp.Stop()
-	app.db.Close()
 }

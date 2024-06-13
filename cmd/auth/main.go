@@ -8,15 +8,23 @@ import (
 
 	"github.com/dkrasnykh/gophkeeper/internal/auth"
 	"github.com/dkrasnykh/gophkeeper/internal/auth/config"
+	"github.com/dkrasnykh/gophkeeper/pkg/logger/sl"
 )
 
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
 	cfg := config.MustLoad()
-	log.Info("starting application", slog.Any("config", cfg))
+	log.Debug("starting application", slog.Any("config", cfg))
 
-	app := auth.New(log, cfg.GRPC.Port, cfg.DatabaseURL, cfg.TokenTTL, cfg.ConnectTimeout, cfg.CertFile, cfg.KeyFile)
+	app, err := auth.New(log, cfg)
+	if err != nil {
+		log.Error(
+			"error creating application service",
+			sl.Err(err),
+		)
+		return
+	}
 	go app.MustRun()
 
 	stop := make(chan os.Signal, 1)

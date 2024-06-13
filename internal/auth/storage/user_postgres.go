@@ -19,11 +19,15 @@ type UserPostgres struct {
 	timeout time.Duration
 }
 
-func NewUserPostgres(db *pgxpool.Pool, timeout time.Duration) *UserPostgres {
-	return &UserPostgres{
-		db:      db,
-		timeout: timeout,
+func NewUserPostgres(databaseURL string, timeout time.Duration) (*UserPostgres, error) {
+	pool, err := newPool(databaseURL, timeout)
+	if err != nil {
+		return nil, err
 	}
+	return &UserPostgres{
+		db:      pool,
+		timeout: timeout,
+	}, nil
 }
 
 // SaveUser saved new user into database.
@@ -51,14 +55,15 @@ func (s *UserPostgres) SaveUser(ctx context.Context, email string, passHash []by
 // It returns ErrUserNotFound error, if user with email does not registered.
 func (s *UserPostgres) User(ctx context.Context, email string) (models.User, error) {
 	const op = "storage.postgres.User"
+
 	newCtx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	var user models.User
-	var err error
-
-	row := s.db.QueryRow(newCtx, "select id, login, password_hash from users where login = $1", email)
-	err = row.Scan(&user.ID, &user.Email, &user.PassHash)
+	rows, err := s.db.Query(newCtx, "select (id, login, password_hash) from users where login = $1", email)
+	if err != nil {
+		return models.User{}, fmt.Errorf("%s: %w", op, err)
+	}
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowTo[models.User])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return models.User{}, fmt.Errorf("%s: %w", op, ErrUserNotFound)
@@ -66,6 +71,10 @@ func (s *UserPostgres) User(ctx context.Context, email string) (models.User, err
 		return models.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return user, nil
+}
+
+func (s *UserPostgres) Close() {
+	s.db.Close()
 }
 
 func isLoginExistError(err error) bool {

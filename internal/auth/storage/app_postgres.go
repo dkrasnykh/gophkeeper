@@ -19,11 +19,15 @@ type AppPostgres struct {
 	timeout time.Duration
 }
 
-func NewAppPostgres(db *pgxpool.Pool, timeout time.Duration) *AppPostgres {
-	return &AppPostgres{
-		db:      db,
-		timeout: timeout,
+func NewAppPostgres(databaseURL string, timeout time.Duration) (*AppPostgres, error) {
+	pool, err := newPool(databaseURL, timeout)
+	if err != nil {
+		return nil, err
 	}
+	return &AppPostgres{
+		db:      pool,
+		timeout: timeout,
+	}, nil
 }
 
 // App returns application information by application id.
@@ -33,11 +37,11 @@ func (s *AppPostgres) App(ctx context.Context, id int) (models.App, error) {
 	newCtx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	var app models.App
-	var err error
-
-	row := s.db.QueryRow(newCtx, "SELECT id, name, secret FROM apps WHERE id = $1", id)
-	err = row.Scan(&app.ID, &app.Name, &app.Secret)
+	rows, err := s.db.Query(newCtx, "SELECT (id, name, secret) FROM apps WHERE id = $1", id)
+	if err != nil {
+		return models.App{}, fmt.Errorf("%s: %w", op, err)
+	}
+	app, err := pgx.CollectExactlyOneRow(rows, pgx.RowTo[models.App])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return models.App{}, fmt.Errorf("%s: %w", op, ErrAppNotFound)
@@ -45,4 +49,8 @@ func (s *AppPostgres) App(ctx context.Context, id int) (models.App, error) {
 		return models.App{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return app, nil
+}
+
+func (s *AppPostgres) Close() {
+	s.db.Close()
 }
