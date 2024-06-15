@@ -2,7 +2,6 @@
 CREATE TABLE IF NOT EXISTS credentials
 (
     id                 INTEGER PRIMARY KEY,
-    user_id            INTEGER,
     tag                TEXT,
     login              TEXT NOT NULL UNIQUE,
     password           TEXT,
@@ -13,7 +12,6 @@ CREATE TABLE IF NOT EXISTS credentials
 CREATE TABLE IF NOT EXISTS text
 (
     id                 INTEGER PRIMARY KEY,
-    user_id            INTEGER,
     tag                TEXT,
     key                TEXT NOT NULL UNIQUE,
     value              TEXT,
@@ -24,7 +22,6 @@ CREATE TABLE IF NOT EXISTS text
 CREATE TABLE IF NOT EXISTS binary
 (
     id                 INTEGER PRIMARY KEY,
-    user_id            INTEGER,
     tag                TEXT,
     key                TEXT NOT NULL UNIQUE,
     value              BLOB,
@@ -35,7 +32,6 @@ CREATE TABLE IF NOT EXISTS binary
 CREATE TABLE IF NOT EXISTS card
 (
     id                 INTEGER PRIMARY KEY,
-    user_id            INTEGER,
     tag                TEXT,
     number             TEXT NOT NULL UNIQUE,
     exp                TEXT,
