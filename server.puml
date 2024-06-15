@@ -1,0 +1,43 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+participant Client
+
+box "Server" #LightYellow
+participant "Websocket\nhandler"
+participant "User\nconnections\nstore"
+participant Service
+database Storage
+end box
+
+collections "other clients\nof the same user"
+autonumber
+
+Client -> "Websocket\nhandler": GET Upgrade: websocket\n(with token header)
+"Websocket\nhandler" --> Client: 101 Switching Protocols
+Client <-> "Websocket\nhandler": established connection
+"Websocket\nhandler" -> "Websocket\nhandler": validate token
+"Websocket\nhandler" -> "User\nconnections\nstore": add new user connection
+"Websocket\nhandler" -> Service: take snapshot(ctx, userID)
+Service -> Storage: snapshot(ctx, userID)
+note right: selection from db items with unique key and with latest timestamp ("created")
+Storage --> Service: item list
+Service --> Service:
+note right: decrypt db data and create msg snapshot
+Service --> "Websocket\nhandler": msg snapshot
+"Websocket\nhandler" --> Client: msg snapshot
+Client -> "Websocket\nhandler": new msg (contains token)
+"Websocket\nhandler" -> Service: new msg (contains token)
+Service -> Service:
+note right: parse and validate token\nvalidate msg
+Service --> "Websocket\nhandler": update msg
+Service -> Storage: Save validated msg
+Storage --> Service: nil
+Service --> "Websocket\nhandler": nil
+"Websocket\nhandler" -> "User\nconnections\nstore": Get all user connections
+"User\nconnections\nstore" --> "Websocket\nhandler": list of user connections
+loop conn cnt times
+    "Websocket\nhandler" -> "other clients\nof the same user": send msg update
+end loop
+
+
+@enduml

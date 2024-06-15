@@ -1,0 +1,124 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor User
+
+box "Client" #LightYellow
+participant CLI
+participant Service
+participant "Websocket\nclient"
+database Storage
+end box
+
+participant Auth
+participant Server
+
+User -> CLI: started application
+'note right: UI select command:\n{Login, Registration}
+hnote over CLI
+ UI selection
+ * Login
+ * Register
+endhnote
+User -> CLI: Selected "Register"
+hnote over CLI
+ UI provide for registration:
+ * Login
+ * Password
+ * Repeat Password
+endhnote
+User -> CLI: registration data
+CLI -> Service: registration request
+Service -> Auth: GRPC registration request
+Auth --> Service: GRPC registration response: (user_id)
+Service --> CLI: success
+hnote over CLI
+ UI
+ success
+ press enter to continue
+endhnote
+hnote over CLI
+ UI provide credentials for logged in:
+ * login
+ * password
+endhnote
+User -> CLI: credentials
+CLI -> Service: login request
+Service -> Auth: GRPC login request
+Auth --> Service: GRPC login response (token)
+Service -> "Websocket\nclient": token, interrupt chan
+"Websocket\nclient" -> Server: GET Upgrade: websocket\n(with token header)
+"Server" --> "Websocket\nclient": 101 Switching Protocols
+"Websocket\nclient" <-> Server: established websocket connection
+Server --> "Websocket\nclient": msg snapshot
+note right: snapshot contains\nactual user data
+"Websocket\nclient" --> Service: Apply msg snapshot
+Service -> Service: validate and parse snapshot
+loop snapshot len times
+   Service -> Storage: Get by unique key value
+   Storage --> Service: response
+   Service -> Storage: insert or update
+end
+'"Get all secrets", "Add credentials", "Add text data", "Add binary data", "Add card data"
+hnote over CLI
+ UI selection
+ * Get all secrets
+ * Add credentials
+ * Add text data
+ * Add binary data
+ * Add card data
+endhnote
+User -> CLI: Get all secrets
+CLI -> Service: Get all credentials
+Service -> Storage: Get all credentials
+Storage --> Service: credentials list
+Service --> CLI: credentials list
+CLI -> Service: Get all text
+Service -> Storage: Get all text
+Storage --> Service: text list
+Service --> CLI: text list
+CLI -> Service: Get all binary
+Service -> Storage: Get all binary
+Storage --> Service: binary list
+Service --> CLI: binary list
+CLI -> Service: Get all card
+Service -> Storage: Get all card
+Storage --> Service: card list
+Service --> CLI: card list
+CLI -> CLI: convert results into common string list
+hnote over CLI
+ UI list of all secrets
+ press enter to continue
+endhnote
+hnote over CLI
+ UI selection
+ * Get all secrets
+ * Add credentials
+ * Add text data
+ * Add binary data
+ * Add card data
+endhnote
+User -> CLI: Add text data
+hnote over CLI
+ UI provide to add text data:
+ * Tag
+ * Key
+ * Value
+ * Comment
+ SUBMIT
+endhnote
+User -> CLI: submit new text data
+CLI -> Service: Text:{Tag, Key, Value, Comment, Created(timestamp)}
+Service -> "Websocket\nclient": Text
+"Websocket\nclient" -> Server: msg new
+Service -> Storage: save new text
+Storage --> Service: success
+Service --> CLI: success
+====
+Server --> "Websocket\nclient": update msg
+"Websocket\nclient" --> Service: apply msg
+Service -> Service: validate and parse msg
+Service -> Storage: save or update item
+
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+participant Client
+box "Auth" #LightYellow
+participant Handler
+participant Service
+database Storage
+end box
+
+==OK==
+autonumber 1.1
+Client -> Handler: GRPC request:{login, password}
+Handler -> Service: request
+Service -> Service: credentials validation
+Service -> Storage: Save {login, password hash}
+Storage --> Service: (user_id, nil)
+Service --> Handler: (user_id, nil)
+Handler --> Client: GRPC response:{user_id}
+==invalid credentials==
+autonumber 2.1
+Client -> Handler: GRPC request:{login, password}
+Handler -> Service: request
+Service -> Service: credentials validation
+Service --> Handler: (0, ErrInvalidData)
+Handler --> Client: GRPC response: {code:3 (InvalidArgument)}
+==user already exists==
+autonumber 3.1
+Client -> Handler: GRPC request:{login, password}
+Handler -> Service: request
+Service -> Service: validation
+Service -> Storage: (login, password hash)
+Storage --> Service: (0, ErrUserExists)
+Service --> Handler: (0, ErrUserExists)
+Handler --> Client: GRPC response: {code:6 (AlreadyExists)}
+@enduml

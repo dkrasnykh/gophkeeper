@@ -1,0 +1,54 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+participant Client
+box "Auth" #LightYellow
+participant Handler
+participant Service
+participant JWT
+database Storage
+end box
+
+==OK==
+autonumber 1.1
+Client -> Handler: GRPC request:{login, password, app_id}
+Handler -> Service: request
+Service -> Service: credentials validation
+Service -> Storage: get user by login
+Storage --> Service: user
+Service -> Service: validate password
+Service -> Storage: Get app by id
+Storage --> Service: App
+Service -> JWT: Get token {user, app, TokenTTL}
+JWT --> Service: token
+Service --> Handler: (token, nil)
+Handler --> Client: GRPC response: {token}
+==invalid credentilals==
+autonumber 2.1
+Client -> Handler: GRPC request:{login, password, app_id}
+Handler -> Service: request
+Service -> Service: credentials validation
+Service --> Handler: ErrInvalidCredentials
+Handler --> Client: GRPC response:{code: 3 (InvalidArgument)}
+==user not found==
+autonumber 3.1
+Client -> Handler: GRPC request:{login, password, app_id}
+Handler -> Service: request
+Service -> Service: credentials validation
+Service -> Storage: get user by login
+Storage --> Service: ErrUserNotFound
+Service --> Handler: ErrInvalidCredentials
+Handler --> Client: GRPC response:{code: 3 (InvalidArgument)}
+==application not found==
+autonumber 4.1
+Client -> Handler: GRPC request:{login, password, app_id}
+Handler -> Service: request
+Service -> Service: credentials validation
+Service -> Storage: get user by login
+Storage --> Service: user
+Service -> Service: validate password
+Service -> Storage: Get app by id
+Storage --> Service: ErrAppNotFound
+Service --> Handler: ErrAppNotFound
+Handler --> Client: GRPC response:{code: 13 (Internal)}
+
+@enduml

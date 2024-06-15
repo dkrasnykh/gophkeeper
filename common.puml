@@ -1,0 +1,18 @@
+@startuml
+actor User
+collections Clients
+participant Auth
+participant Server
+
+User <-> Clients
+activate Clients
+Clients -> Auth: register/login (GRPC)
+Auth --> Clients: token
+Clients -> Server: GET Upgrade: websocket
+Server --> Clients: 101 Switching Protocols
+Server --> Clients: snapshot msg
+Clients -> Server: new secret data msg
+Server --> Clients: update for all active clients (of current user)
+deactivate Clients
+@enduml
+
